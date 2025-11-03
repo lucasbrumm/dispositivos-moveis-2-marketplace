@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/cake.dart';
 import '../providers/cart_provider.dart';
+import '../providers/cake_provider.dart';
 import 'cake_detail_screen.dart';
 import 'cart_screen.dart';
 
@@ -10,8 +10,9 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cakes = Cake.getSampleCakes();
+    final cakeProvider = Provider.of<CakeProvider>(context);
     final cartProvider = Provider.of<CartProvider>(context);
+    final cakes = cakeProvider.cakes;
 
     return Scaffold(
       appBar: AppBar(
@@ -65,6 +66,7 @@ class HomeScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
+            width: double.infinity,
             padding: const EdgeInsets.all(16),
             color: Colors.pink[50],
             child: Column(
@@ -89,18 +91,62 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(12),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.75,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-              ),
-              itemCount: cakes.length,
-              itemBuilder: (context, index) {
-                final cake = cakes[index];
-                final isInCart = cartProvider.isInCart(cake.id);
+            child: cakeProvider.isLoading
+                ? const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 16),
+                        Text('Carregando bolos...'),
+                      ],
+                    ),
+                  )
+                : cakeProvider.error != null
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              size: 60,
+                              color: Colors.red[300],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              cakeProvider.error!,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton.icon(
+                              onPressed: () => cakeProvider.loadCakes(),
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Tentar Novamente'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : cakes.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'Nenhum bolo disponível',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          )
+                        : GridView.builder(
+                            padding: const EdgeInsets.all(12),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio: 0.75,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                            ),
+                            itemCount: cakes.length,
+                            itemBuilder: (context, index) {
+                              final cake = cakes[index];
+                              final isInCart = cartProvider.isInCart(cake.id);
 
                 return Card(
                   elevation: 4,

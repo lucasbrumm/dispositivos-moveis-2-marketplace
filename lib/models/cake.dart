@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class Cake {
   final String id;
   final String name;
@@ -16,6 +18,32 @@ class Cake {
     required this.category,
     required this.flavors,
   });
+
+  // Converter para Map (para salvar no banco)
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'price': price,
+      'image': image,
+      'category': category,
+      'flavors': jsonEncode(flavors), // Convertendo lista para JSON string
+    };
+  }
+
+  // Criar Cake a partir de Map (para ler do banco)
+  factory Cake.fromMap(Map<String, dynamic> map) {
+    return Cake(
+      id: map['id'] as String,
+      name: map['name'] as String,
+      description: map['description'] as String,
+      price: map['price'] as double,
+      image: map['image'] as String,
+      category: map['category'] as String,
+      flavors: List<String>.from(jsonDecode(map['flavors'])),
+    );
+  }
 
   // Lista de bolos de exemplo
   static List<Cake> getSampleCakes() {

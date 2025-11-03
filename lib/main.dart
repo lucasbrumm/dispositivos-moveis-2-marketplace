@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/cart_provider.dart';
+import 'providers/cake_provider.dart';
 import 'screens/home_screen.dart';
 
 void main() {
@@ -12,8 +13,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => CartProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => CartProvider()),
+        ChangeNotifierProvider(
+          create: (context) => CakeProvider()..loadCakes(),
+        ),
+      ],
       child: MaterialApp(
         title: 'Marketplace de Bolos',
         debugShowCheckedModeBanner: false,
