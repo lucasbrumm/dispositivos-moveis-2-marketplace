@@ -4,6 +4,7 @@ import '../providers/cart_provider.dart';
 import '../providers/cake_provider.dart';
 import 'cake_detail_screen.dart';
 import 'cart_screen.dart';
+import 'orders_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -19,11 +20,41 @@ class HomeScreen extends StatelessWidget {
         title: const Text('🍰 Marketplace de Bolos'),
         backgroundColor: Colors.pink[300],
         actions: [
+          // Botão DEBUG - Remover em produção
+          IconButton(
+            icon: const Icon(Icons.bug_report),
+            tooltip: 'Reset DB (Debug)',
+            onPressed: () async {
+              final cakeProvider = Provider.of<CakeProvider>(context, listen: false);
+              await cakeProvider.resetDatabase();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('✅ Banco resetado! Migration v2 aplicada.'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.receipt_long),
+            tooltip: 'Meus Pedidos',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const OrdersScreen(),
+                ),
+              );
+            },
+          ),
           Stack(
             alignment: Alignment.center,
             children: [
               IconButton(
                 icon: const Icon(Icons.shopping_cart),
+                tooltip: 'Carrinho',
                 onPressed: () {
                   Navigator.push(
                     context,

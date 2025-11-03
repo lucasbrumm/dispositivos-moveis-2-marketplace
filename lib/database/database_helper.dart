@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/cake.dart';
+import '../models/order.dart';
 import 'migrations.dart';
 import 'cake_repository.dart';
 
@@ -10,7 +11,7 @@ class DatabaseHelper implements CakeRepository {
   static Database? _database;
 
   // Versão atual do banco de dados
-  static const int _databaseVersion = 1;
+  static const int _databaseVersion = 2;
 
   DatabaseHelper._init();
 
@@ -36,7 +37,17 @@ class DatabaseHelper implements CakeRepository {
 
   Future<void> _createDB(Database db, int version) async {
     debugPrint('🆕 Criando novo banco de dados v$version');
-    await DatabaseMigrations.migrationV1(db);
+    // Executar todas as migrations até a versão atual
+    for (int v = 1; v <= version; v++) {
+      switch (v) {
+        case 1:
+          await DatabaseMigrations.migrationV1(db);
+          break;
+        case 2:
+          await DatabaseMigrations.migrationV2(db);
+          break;
+      }
+    }
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -144,6 +155,88 @@ class DatabaseHelper implements CakeRepository {
     
     // Reinicializar o banco com dados iniciais
     await database;
+  }
+
+  // ============================================
+  // CRUD Operations para Orders (Pedidos)
+  // ============================================
+
+  // Criar um novo pedido
+  Future<Order> createOrder(Order order) async {
+    final db = await database;
+    await db.insert(
+      'orders',
+      order.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    debugPrint('✅ Pedido ${order.id} criado com sucesso');
+    return order;
+  }
+
+  // Ler um pedido pelo ID
+  Future<Order?> readOrder(String id) async {
+    final db = await database;
+    final maps = await db.query(
+      'orders',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (maps.isNotEmpty) {
+      return Order.fromMap(maps.first);
+    } else {
+      return null;
+    }
+  }
+
+  // Ler todos os pedidos (ordenados do mais recente para o mais antigo)
+  Future<List<Order>> readAllOrders() async {
+    final db = await database;
+    final result = await db.query('orders', orderBy: 'created_at DESC');
+    return result.map((map) => Order.fromMap(map)).toList();
+  }
+
+  // Ler pedidos de um cliente específico
+  Future<List<Order>> readOrdersByCustomer(String customerName) async {
+    final db = await database;
+    final result = await db.query(
+      'orders',
+      where: 'customer_name = ?',
+      whereArgs: [customerName],
+      orderBy: 'created_at DESC',
+    );
+    return result.map((map) => Order.fromMap(map)).toList();
+  }
+
+  // Deletar um pedido
+  Future<int> deleteOrder(String id) async {
+    final db = await database;
+    return await db.delete(
+      'orders',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // Deletar todos os pedidos
+  Future<int> deleteAllOrders() async {
+    final db = await database;
+    return await db.delete('orders');
+  }
+
+  // Obter total de pedidos
+  Future<int> getOrdersCount() async {
+    final db = await database;
+    final result = await db.rawQuery('SELECT COUNT(*) as count FROM orders');
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  // Obter valor total de todos os pedidos
+  Future<double> getTotalRevenue() async {
+    final db = await database;
+    final result = await db.rawQuery('SELECT SUM(total) as total FROM orders');
+    final total = result.first['total'];
+    return total != null ? (total as num).toDouble() : 0.0;
   }
 }
 

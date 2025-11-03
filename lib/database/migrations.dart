@@ -40,24 +40,22 @@ class DatabaseMigrations {
     debugPrint('✅ ${initialCakes.length} bolos inseridos no banco de dados');
   }
 
-  /// Exemplo de migration futura - Versão 2
-  /// (Descomente quando necessário)
-  /*
-  static Future<void> migration_v2(Database db) async {
-    // Exemplo: Adicionar uma nova coluna
+  /// Migration v2 - Sistema de Pedidos
+  /// Cria tabela de pedidos (orders)
+  static Future<void> migrationV2(Database db) async {
+    // Criar tabela de pedidos
     await db.execute('''
-      ALTER TABLE cakes ADD COLUMN stock INTEGER DEFAULT 0
+      CREATE TABLE orders (
+        id TEXT PRIMARY KEY,
+        customer_name TEXT NOT NULL,
+        total REAL NOT NULL,
+        created_at TEXT NOT NULL,
+        items_json TEXT NOT NULL
+      )
     ''');
     
-    // Atualizar registros existentes
-    await db.update(
-      'cakes',
-      {'stock': 10},
-    );
-    
-    print('✅ Migration v2 executada: coluna stock adicionada');
+    debugPrint('✅ Migration v2 executada: tabela de pedidos criada');
   }
-  */
 
   /// Exemplo de migration futura - Versão 3
   /// (Descomente quando necessário)
@@ -99,9 +97,9 @@ class DatabaseMigrations {
         case 1:
           await migrationV1(db);
           break;
-        // case 2:
-        //   await migrationV2(db);
-        //   break;
+        case 2:
+          await migrationV2(db);
+          break;
         // case 3:
         //   await migrationV3(db);
         //   break;
