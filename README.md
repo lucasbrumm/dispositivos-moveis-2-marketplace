@@ -1,137 +1,392 @@
-# 🍰 Marketplace de Bolos
+# 📋 Documento de Especificação - Marketplace de Bolos
 
-Um aplicativo Flutter completo de marketplace de bolos com navegação entre telas e funcionalidade de carrinho de compras.
+## 1. Nome e Descrição do Aplicativo
 
-## ✨ Funcionalidades
+### Nome
+**Marketplace de Bolos** 🍰
 
-### 🏠 Tela Inicial (Home)
-- Lista de bolos em grid responsivo
-- Exibição de nome, preço e emoji de cada bolo
-- Badge com contador de itens no carrinho
-- Botão para adicionar bolos ao carrinho
-- Indicação visual de bolos já adicionados ao carrinho
-- Navegação para tela de detalhes ao tocar no bolo
+### Descrição
+O Marketplace de Bolos é um aplicativo mobile desenvolvido em Flutter que oferece uma experiência completa de e-commerce para venda de bolos artesanais. O aplicativo permite aos usuários navegar por um catálogo de bolos, visualizar detalhes de cada produto, gerenciar um carrinho de compras e realizar pedidos que são persistidos localmente no dispositivo através de banco de dados SQLite.
 
-### 📱 Tela de Detalhes do Bolo
-- Imagem grande do bolo com animação Hero
-- Nome, categoria e preço
-- Descrição detalhada
-- Lista de sabores disponíveis
-- Controle de quantidade (se já estiver no carrinho)
+O aplicativo foi desenvolvido seguindo boas práticas de arquitetura Flutter, utilizando padrões de design como Provider para gerenciamento de estado e Repository Pattern para abstração da camada de dados, garantindo escalabilidade e manutenibilidade do código.
+
+---
+
+## 2. Funcionalidades Implementadas
+
+### 2.1. Catálogo de Produtos
+
+**Tela Inicial (Home Screen)**
+- Exibição de 8 bolos em grid responsivo (2 colunas)
+- Cada card exibe: emoji, nome, preço e botão de ação
+- Badge com contador de itens no carrinho no AppBar
+- Indicador visual para bolos já adicionados ao carrinho
+- Navegação para tela de detalhes ao tocar no card
+- Tela de splash screen com loading durante inicialização
+- Tratamento de estados: loading, erro e vazio
+- Suporte multiplataforma (Android, iOS, Web)
+
+**Tela de Detalhes do Bolo**
+- Visualização completa das informações do bolo
+- Exibição de: nome, categoria, descrição, preço e sabores
+- Animação Hero para transição suave
 - Botão para adicionar ao carrinho
-- Indicação visual se o bolo já está no carrinho
+- Indicador se o bolo já está no carrinho
+- Navegação direta para carrinho via SnackBar
 
-### 🛒 Tela do Carrinho
-- Lista de todos os itens adicionados
-- Controle de quantidade para cada item (+/-)
+### 2.2. Carrinho de Compras
+
+**Gerenciamento de Itens**
+- Adição de bolos ao carrinho (incremento automático se já existir)
+- Controle de quantidade individual por item (+/-)
 - Remoção de itens individuais
-- Botão para limpar todo o carrinho
-- Cálculo automático de totais
-- Resumo do pedido com subtotal e total
-- Finalização do pedido com mensagem de confirmação
-- Tela vazia com mensagem quando não há itens
+- Limpeza completa do carrinho com confirmação
+- Cálculo automático de subtotal e total
+- Badge dinâmico com quantidade total de itens
 
-## 🎨 Características de Design
+**Finalização de Pedido**
+- Diálogo de checkout com campo para nome do cliente
+- Validação de dados obrigatórios
+- Resumo do pedido antes de confirmar
+- Persistência do pedido no banco de dados SQLite
+- Limpeza automática do carrinho após confirmação
+- Navegação automática para tela de pedidos
+- Feedback visual com mensagens de sucesso/erro
 
-- **Tema moderno**: Utiliza Material Design 3 com paleta de cores em tons de rosa e roxo
-- **UI/UX otimizada**: Interface intuitiva e responsiva
-- **Feedback visual**: Snackbars para ações do usuário
-- **Animações suaves**: Transições entre telas com Hero animations
-- **Badges informativos**: Contador de itens no carrinho sempre visível
+### 2.3. Sistema de Pedidos
 
-## 🏗️ Arquitetura
+**Visualização de Pedidos**
+- Lista completa de todos os pedidos realizados
+- Ordenação por data (mais recentes primeiro)
+- Cards expansíveis com detalhes completos
+- Exibição de: nome do cliente, data/hora, valor total
+- Detalhamento de cada item do pedido (nome, quantidade, preço)
+- Opção de excluir pedidos com confirmação
+- Estados visuais: loading, erro e lista vazia
 
-O projeto segue boas práticas de organização de código Flutter:
+**Persistência de Dados**
+- Todos os pedidos são salvos no banco SQLite
+- Dados persistem entre sessões do aplicativo
+- Sistema de migrations para evolução do banco de dados
+- Suporte para upgrade automático de versão do banco
+
+### 2.4. Persistência de Dados
+
+**Banco de Dados SQLite**
+- Tabela `cakes`: Armazena informações dos bolos
+- Tabela `orders`: Armazena pedidos com itens em JSON
+- Sistema de migrations versionado (v1 e v2)
+- Inserção automática de 8 bolos iniciais na primeira execução
+- Operações CRUD completas para bolos e pedidos
+- Suporte multiplataforma: SQLite em mobile, memória em web
+
+**Repository Pattern**
+- Abstração da camada de dados através de interfaces
+- Implementação específica por plataforma (SQLite/Memória)
+- Factory pattern para seleção automática da implementação
+- Facilita testes e manutenção
+
+### 2.5. Gerenciamento de Estado
+
+**Providers Implementados**
+- `CakeProvider`: Gerencia estado dos bolos (carregamento, listagem)
+- `CartProvider`: Gerencia estado do carrinho (itens, quantidades, totais)
+- `OrderProvider`: Gerencia estado dos pedidos (criação, listagem, exclusão)
+
+**Estados Gerenciados**
+- Loading states para operações assíncronas
+- Error handling com mensagens amigáveis
+- Estados vazios com mensagens informativas
+- Notificações automáticas de mudanças (ChangeNotifier)
+
+### 2.6. Interface e Experiência do Usuário
+
+**Design System**
+- Material Design 3 com tema personalizado
+- Paleta de cores em tons de rosa e roxo
+- Gradientes suaves nos cards de produtos
+- Ícones intuitivos e consistentes
+- Tipografia hierárquica e legível
+
+**Navegação**
+- Navegação imperativa entre telas
+- AppBar com ações rápidas (pedidos, carrinho)
+- Botão de voltar nativo
+- Transições suaves entre telas
+
+**Feedback Visual**
+- SnackBars para ações do usuário
+- Indicadores de loading durante operações
+- Mensagens de erro com opção de retry
+- Badges informativos no AppBar
+- Animações Hero para elementos compartilhados
+
+---
+
+## 3. Tecnologias Utilizadas
+
+### 3.1. Framework e Linguagem
+
+**Flutter**
+- Versão: SDK ^3.9.2
+- Framework multiplataforma para desenvolvimento mobile
+- Linguagem: Dart
+- Suporte para Android, iOS e Web
+
+### 3.2. Gerenciamento de Estado
+
+**Provider** (^6.1.1)
+- Padrão Provider para gerenciamento de estado reativo
+- ChangeNotifier para notificações de mudanças
+- MultiProvider para múltiplos providers na árvore de widgets
+- Reduz acoplamento e facilita testes
+
+### 3.3. Persistência de Dados
+
+**SQLite (sqflite)** (^2.3.0)
+- Banco de dados SQLite nativo para Android e iOS
+- Operações assíncronas para não bloquear a UI
+- Suporte a migrations versionadas
+- Transações e queries otimizadas
+
+**Path** (^1.8.3)
+- Manipulação de caminhos de arquivos
+- Utilizado para localização do banco de dados
+- Compatibilidade multiplataforma
+
+### 3.4. Arquitetura e Padrões
+
+**Repository Pattern**
+- Abstração da camada de dados
+- Interface `CakeRepository` para operações CRUD
+- Implementações: `DatabaseHelper` (SQLite) e `CakeRepositoryMemory` (Web)
+- Factory pattern para seleção automática
+
+**Migrations**
+- Sistema versionado de evolução do banco de dados
+- Migrations incrementais (v1 → v2)
+- Execução automática na inicialização
+- Suporte para rollback e upgrade
+
+### 3.5. Ferramentas de Desenvolvimento
+
+**Flutter Lints** (^5.0.0)
+- Análise estática de código
+- Boas práticas e convenções Flutter
+- Detecção de problemas potenciais
+
+**Cupertino Icons** (^1.0.8)
+- Biblioteca de ícones iOS
+- Ícones consistentes e profissionais
+
+### 3.6. Estrutura de Dados
+
+**Modelos**
+- `Cake`: Modelo de dados do bolo com serialização JSON
+- `CartItem`: Item do carrinho com quantidade
+- `Order`: Pedido completo com lista de itens
+- `OrderItem`: Item individual do pedido
+
+**Serialização**
+- Métodos `toMap()` e `fromMap()` para conversão
+- JSON encoding/decoding para listas complexas
+- Compatibilidade com banco de dados
+
+---
+
+## 4. Instruções de Instalação e Execução
+
+### 4.1. Pré-requisitos
+
+**Flutter SDK**
+- Versão mínima: 3.9.2
+- Verificar instalação: `flutter --version`
+- Instalação: https://flutter.dev/docs/get-started/install
+
+**Android Studio** (para desenvolvimento Android)
+- Android SDK configurado
+- Emulador Android ou dispositivo físico
+- Depuração USB habilitada (para dispositivo físico)
+
+**VS Code ou Android Studio** (IDE recomendado)
+- Extensões Flutter e Dart instaladas
+- Configuração do ambiente de desenvolvimento
+
+### 4.2. Instalação
+
+**1. Clonar o Repositório**
+```bash
+git clone <url-do-repositorio>
+cd dispositivos-moveis-2-marketplace
+```
+
+**2. Instalar Dependências**
+```bash
+flutter pub get
+```
+
+Este comando irá baixar e instalar todas as dependências listadas no `pubspec.yaml`:
+- provider
+- sqflite
+- path
+- cupertino_icons
+
+**3. Verificar Configuração**
+```bash
+flutter doctor
+```
+
+Certifique-se de que todos os componentes necessários estão instalados e configurados corretamente.
+
+### 4.3. Execução
+
+**Executar no Emulador/Dispositivo Android**
+
+1. **Iniciar Emulador** (se usando emulador):
+   - Abrir Android Studio
+   - AVD Manager → Iniciar emulador
+   - Ou via terminal: `flutter emulators --launch <nome>`
+
+2. **Conectar Dispositivo Físico** (se usando dispositivo):
+   - Conectar via USB
+   - Habilitar "Depuração USB" nas opções do desenvolvedor
+   - Verificar conexão: `adb devices`
+
+3. **Executar o Aplicativo**:
+```bash
+flutter run
+```
+
+O Flutter detectará automaticamente o dispositivo disponível e instalará o aplicativo.
+
+**Executar na Web (Chrome)**
+```bash
+flutter run -d chrome
+```
+
+**Executar em Dispositivo Específico**
+```bash
+# Listar dispositivos disponíveis
+flutter devices
+
+# Executar em dispositivo específico
+flutter run -d <device-id>
+```
+
+### 4.4. Build para Produção
+
+**Gerar APK de Release (Android)**
+```bash
+flutter build apk --release
+```
+
+O APK será gerado em: `build/app/outputs/flutter-apk/app-release.apk`
+
+**Gerar APK Split por ABI (menor tamanho)**
+```bash
+flutter build apk --split-per-abi
+```
+
+Gera APKs separados para cada arquitetura (arm64-v8a, armeabi-v7a, x86_64).
+
+**Instalar APK no Dispositivo**
+```bash
+# Via ADB
+adb install build/app/outputs/flutter-apk/app-release.apk
+
+# Ou via Flutter
+flutter install
+```
+
+### 4.5. Comandos Úteis Durante Desenvolvimento
+
+**Hot Reload**
+- Pressione `r` no terminal durante execução
+- Aplica mudanças sem reiniciar o app
+
+**Hot Restart**
+- Pressione `R` (maiúsculo) no terminal
+- Reinicia o app mantendo o estado
+
+**Ver Logs**
+```bash
+flutter logs
+```
+
+**Limpar Build**
+```bash
+flutter clean
+flutter pub get
+```
+
+### 4.6. Solução de Problemas Comuns
+
+**Erro: "no such table: orders"**
+- Solução: Desinstalar e reinstalar o app
+```bash
+adb uninstall com.example.marketplace
+flutter run
+```
+
+**Erro: "databaseFactory not initialized" (Web)**
+- Normal: SQLite não funciona na web, usa memória automaticamente
+- Não é necessário ação
+
+**Erro: Dispositivo não detectado**
+```bash
+# Verificar conexão ADB
+adb devices
+
+# Reiniciar servidor ADB
+adb kill-server
+adb start-server
+```
+
+**Erro: Dependências não instaladas**
+```bash
+flutter clean
+flutter pub get
+flutter run
+```
+
+### 4.7. Estrutura do Projeto
 
 ```
-lib/
-├── main.dart                  # Ponto de entrada do app
-├── models/                    # Modelos de dados
-│   ├── cake.dart             # Modelo de Bolo
-│   └── cart_item.dart        # Modelo de Item do Carrinho
-├── providers/                 # Gerenciamento de estado
-│   └── cart_provider.dart    # Provider do carrinho (ChangeNotifier)
-└── screens/                   # Telas do aplicativo
-    ├── home_screen.dart      # Tela inicial com lista de bolos
-    ├── cake_detail_screen.dart # Detalhes do bolo
-    └── cart_screen.dart      # Carrinho de compras
+dispositivos-moveis-2-marketplace/
+├── lib/
+│   ├── main.dart                    # Ponto de entrada
+│   ├── models/                      # Modelos de dados
+│   │   ├── cake.dart
+│   │   ├── cart_item.dart
+│   │   └── order.dart
+│   ├── providers/                   # Gerenciamento de estado
+│   │   ├── cake_provider.dart
+│   │   ├── cart_provider.dart
+│   │   └── order_provider.dart
+│   ├── screens/                     # Telas do aplicativo
+│   │   ├── home_screen.dart
+│   │   ├── cake_detail_screen.dart
+│   │   ├── cart_screen.dart
+│   │   └── orders_screen.dart
+│   └── database/                    # Camada de persistência
+│       ├── database_helper.dart
+│       ├── migrations.dart
+│       ├── cake_repository.dart
+│       ├── cake_repository_factory.dart
+│       └── cake_repository_memory.dart
+├── android/                          # Configurações Android
+├── ios/                              # Configurações iOS
+├── web/                              # Configurações Web
+├── pubspec.yaml                      # Dependências do projeto
+└── README.md                         # Documentação básica
 ```
 
-### Padrões Utilizados
+---
 
-- **Provider Pattern**: Para gerenciamento de estado do carrinho
-- **Separation of Concerns**: Separação clara entre models, providers e screens
-- **Responsive Design**: Layout adaptável a diferentes tamanhos de tela
+## 5. Considerações Finais
 
-## 📦 Dependências
+O Marketplace de Bolos é um aplicativo completo e funcional que demonstra o uso de tecnologias modernas de desenvolvimento mobile, incluindo gerenciamento de estado, persistência de dados local e arquitetura escalável. O projeto está pronto para execução e pode ser facilmente estendido com novas funcionalidades como autenticação de usuários, integração com APIs REST, sistema de pagamento e notificações push.
 
-- **flutter**: Framework principal
-- **provider**: ^6.1.1 - Gerenciamento de estado
-- **cupertino_icons**: ^1.0.8 - Ícones iOS
-
-## 🚀 Como Executar
-
-1. Certifique-se de ter o Flutter instalado
-2. Clone o repositório
-3. Instale as dependências:
-   ```bash
-   flutter pub get
-   ```
-4. Execute o aplicativo:
-   ```bash
-   flutter run
-   ```
-
-## 📱 Funcionalidades do Carrinho
-
-### Adicionar ao Carrinho
-- Adicione bolos a partir da tela inicial ou da tela de detalhes
-- Se o bolo já estiver no carrinho, a quantidade é incrementada automaticamente
-
-### Gerenciar Quantidades
-- Aumente ou diminua a quantidade de cada item no carrinho
-- Remova itens individuais ou limpe todo o carrinho
-
-### Finalizar Pedido
-- Visualize o resumo completo do seu pedido
-- Confirme a compra e receba feedback de sucesso
-
-## 🎯 Navegação
-
-O aplicativo utiliza navegação imperativa do Flutter:
-
-- **Home → Detalhes**: Ao tocar em um bolo
-- **Home → Carrinho**: Via botão no AppBar
-- **Detalhes → Carrinho**: Via SnackBar após adicionar item
-- **Carrinho → Home**: Após finalizar pedido ou via botão voltar
-
-## 🍰 Bolos Disponíveis
-
-O marketplace inclui 8 bolos deliciosos:
-
-1. **Bolo de Chocolate** - R$ 45,90
-2. **Bolo de Morango** - R$ 52,90
-3. **Bolo Red Velvet** - R$ 65,90
-4. **Bolo de Cenoura** - R$ 38,90
-5. **Bolo de Limão** - R$ 42,90
-6. **Bolo Prestígio** - R$ 55,90
-7. **Bolo de Baunilha** - R$ 40,90
-8. **Bolo Floresta Negra** - R$ 68,90
-
-Cada bolo possui:
-- Nome e categoria
-- Descrição detalhada
-- Lista de sabores
-- Preço individual
-- Emoji representativo
-
-## 🎨 Paleta de Cores
-
-- **Primary**: Rosa (#E91E63)
-- **Secondary**: Roxo (#9C27B0)
-- **Accent**: Verde (#4CAF50) para ações de sucesso
-- **Background**: Gradiente rosa-roxo para cards
-
-## 📝 Licença
-
-Este é um projeto educacional para demonstração de funcionalidades Flutter.
+**Versão do Aplicativo:** 1.0.0+1  
+**Data de Criação:** 2024  
+**Plataformas Suportadas:** Android, iOS, Web
