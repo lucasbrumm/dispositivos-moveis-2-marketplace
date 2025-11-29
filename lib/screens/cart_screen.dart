@@ -344,13 +344,134 @@ class CartScreen extends StatelessWidget {
   void _showCheckoutDialog(BuildContext context) {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
     final orderProvider = Provider.of<OrderProvider>(context, listen: false);
-    final TextEditingController nameController = TextEditingController();
 
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Finalizar Pedido'),
-        content: Column(
+      barrierDismissible: false,
+      builder: (dialogContext) => _CheckoutDialog(
+        cartProvider: cartProvider,
+        orderProvider: orderProvider,
+        onSuccess: () {
+          // Fechar diálogo primeiro
+          Navigator.of(dialogContext).pop();
+          
+          // Aguardar um frame antes de navegar
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            // Fechar tela do carrinho
+            Navigator.of(context).pop();
+            
+            // Mostrar mensagem e navegar
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('✅ Pedido realizado com sucesso!'),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 2),
+              ),
+            );
+            
+            // Navegar para pedidos
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const OrdersScreen(),
+              ),
+            );
+          });
+        },
+      ),
+    );
+  }
+}
+
+class _CheckoutDialog extends StatefulWidget {
+  final CartProvider cartProvider;
+  final OrderProvider orderProvider;
+  final VoidCallback onSuccess;
+
+  const _CheckoutDialog({
+    required this.cartProvider,
+    required this.orderProvider,
+    required this.onSuccess,
+  });
+
+  @override
+  State<_CheckoutDialog> createState() => _CheckoutDialogState();
+}
+
+class _CheckoutDialogState extends State<_CheckoutDialog> {
+  late final TextEditingController _nameController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _confirmOrder() async {
+    if (!mounted) return;
+    
+    final name = _nameController.text.trim();
+    
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor, digite seu nome'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Criar o pedido
+    final order = Order(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      customerName: name,
+      total: widget.cartProvider.totalAmount,
+      createdAt: DateTime.now(),
+      items: widget.cartProvider.items.map((cartItem) {
+        return OrderItem(
+          cakeId: cartItem.cake.id,
+          cakeName: cartItem.cake.name,
+          price: cartItem.cake.price,
+          quantity: cartItem.quantity,
+          cakeImage: cartItem.cake.image,
+        );
+      }).toList(),
+    );
+
+    // Salvar no banco de dados
+    final success = await widget.orderProvider.createOrder(order);
+    
+    if (!mounted) return;
+    
+    if (success) {
+      // Limpar carrinho
+      widget.cartProvider.clear();
+      
+      // Chamar callback de sucesso (ele fecha o diálogo)
+      widget.onSuccess();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erro ao finalizar pedido. Tente novamente.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Finalizar Pedido'),
+      content: SingleChildScrollView(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -360,7 +481,7 @@ class CartScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             TextField(
-              controller: nameController,
+              controller: _nameController,
               decoration: InputDecoration(
                 labelText: 'Nome',
                 hintText: 'Digite seu nome',
@@ -386,7 +507,7 @@ class CartScreen extends StatelessWidget {
                     children: [
                       const Text('Itens:'),
                       Text(
-                        '${cartProvider.itemCount}',
+                        '${widget.cartProvider.itemCount}',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -397,7 +518,7 @@ class CartScreen extends StatelessWidget {
                     children: [
                       const Text('Total:'),
                       Text(
-                        'R\$ ${cartProvider.totalAmount.toStringAsFixed(2)}',
+                        'R\$ ${widget.cartProvider.totalAmount.toStringAsFixed(2)}',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -411,95 +532,25 @@ class CartScreen extends StatelessWidget {
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              nameController.dispose();
-              Navigator.of(dialogContext).pop();
-            },
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final name = nameController.text.trim();
-              
-              if (name.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Por favor, digite seu nome'),
-                    backgroundColor: Colors.orange,
-                  ),
-                );
-                return;
-              }
-
-              // Fechar diálogo imediatamente
-              Navigator.of(dialogContext).pop();
-
-              // Criar o pedido
-              final order = Order(
-                id: DateTime.now().millisecondsSinceEpoch.toString(),
-                customerName: name,
-                total: cartProvider.totalAmount,
-                createdAt: DateTime.now(),
-                items: cartProvider.items.map((cartItem) {
-                  return OrderItem(
-                    cakeId: cartItem.cake.id,
-                    cakeName: cartItem.cake.name,
-                    price: cartItem.cake.price,
-                    quantity: cartItem.quantity,
-                    cakeImage: cartItem.cake.image,
-                  );
-                }).toList(),
-              );
-
-              // Salvar no banco de dados
-              final success = await orderProvider.createOrder(order);
-              
-              if (success) {
-                // Limpar carrinho
-                cartProvider.clear();
-                
-                // Voltar para tela anterior e navegar para pedidos
-                if (context.mounted) {
-                  Navigator.of(context).pop();
-                  
-                  // Mostrar sucesso
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('✅ Pedido realizado com sucesso!'),
-                      backgroundColor: Colors.green,
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                  
-                  // Navegar para tela de pedidos
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const OrdersScreen(),
-                    ),
-                  );
-                }
-              } else {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Erro ao finalizar pedido. Tente novamente.'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Confirmar'),
-          ),
-        ],
       ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            if (mounted) {
+              Navigator.of(context).pop();
+            }
+          },
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          onPressed: mounted ? _confirmOrder : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green,
+            foregroundColor: Colors.white,
+          ),
+          child: const Text('Confirmar'),
+        ),
+      ],
     );
   }
 }
