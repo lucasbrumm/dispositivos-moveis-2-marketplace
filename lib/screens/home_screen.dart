@@ -20,23 +20,6 @@ class HomeScreen extends StatelessWidget {
         title: const Text('🍰 Marketplace de Bolos'),
         backgroundColor: Colors.pink[300],
         actions: [
-          // Botão DEBUG - Remover em produção
-          IconButton(
-            icon: const Icon(Icons.bug_report),
-            tooltip: 'Reset DB (Debug)',
-            onPressed: () async {
-              final cakeProvider = Provider.of<CakeProvider>(context, listen: false);
-              await cakeProvider.resetDatabase();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('✅ Banco resetado! Migration v2 aplicada.'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              }
-            },
-          ),
           IconButton(
             icon: const Icon(Icons.receipt_long),
             tooltip: 'Meus Pedidos',
@@ -224,29 +207,43 @@ class HomeScreen extends StatelessWidget {
                         Expanded(
                           flex: 2,
                           child: Padding(
-                            padding: const EdgeInsets.all(8.0),
+                            padding: const EdgeInsets.only(
+                              left: 8.0,
+                              right: 8.0,
+                              top: 3.0,
+                              bottom: 2.0,
+                            ),
                             child: Column(
+                              mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  cake.name,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
+                                Flexible(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        cake.name,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 1),
+                                      Text(
+                                        'R\$ ${cake.price.toStringAsFixed(2)}',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.pink[700],
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'R\$ ${cake.price.toStringAsFixed(2)}',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.pink[700],
-                                  ),
-                                ),
-                                const Spacer(),
                                 SizedBox(
                                   width: double.infinity,
                                   child: ElevatedButton.icon(
@@ -264,11 +261,11 @@ class HomeScreen extends StatelessWidget {
                                     },
                                     icon: Icon(
                                       isInCart ? Icons.check : Icons.add_shopping_cart,
-                                      size: 16,
+                                      size: 14,
                                     ),
                                     label: Text(
                                       isInCart ? 'No carrinho' : 'Adicionar',
-                                      style: const TextStyle(fontSize: 11),
+                                      style: const TextStyle(fontSize: 10),
                                     ),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: isInCart
@@ -276,8 +273,9 @@ class HomeScreen extends StatelessWidget {
                                           : Colors.pink[400],
                                       foregroundColor: Colors.white,
                                       padding: const EdgeInsets.symmetric(
-                                        vertical: 4,
+                                        vertical: 3,
                                       ),
+                                      minimumSize: const Size(0, 28),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8),
                                       ),
