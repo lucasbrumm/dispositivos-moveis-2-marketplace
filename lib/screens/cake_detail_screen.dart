@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/cake.dart';
 import '../providers/cart_provider.dart';
+import 'cart_screen.dart';
 
 class CakeDetailScreen extends StatelessWidget {
   final Cake cake;
@@ -223,7 +224,12 @@ class CakeDetailScreen extends StatelessWidget {
                         label: 'Ver Carrinho',
                         textColor: Colors.white,
                         onPressed: () {
-                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const CartScreen(),
+                            ),
+                          );
                         },
                       ),
                     ),
